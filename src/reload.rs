@@ -2,18 +2,18 @@
 
 use bevy::ecs::system::EntityCommands;
 use bevy::ecs::world::Command;
-use bevy::prelude::{AssetServer, Bundle, Commands, Component, DespawnRecursiveExt, Entity, EntityRef, IntoSystemConfigs, Plugin as BevyPlugin, Query, Reflect, Res, Scene, SceneBundle as BevySceneBundle, SceneRoot, SceneSpawner, World};
+use bevy::prelude::{AssetServer, Bundle, Commands, Component, DespawnRecursiveExt, Entity, EntityRef, IntoSystemConfigs, Plugin as BevyPlugin, Query, Reflect, Res, Scene, SceneRoot, SceneSpawner, World};
 use bevy::scene::SceneInstance;
 
-/// Bundle a reload [`Hook`] with the standard [`bevy::prelude::SceneBundle`] components.
+/// Bundle a reload [`Hook`] with the standard [`SceneRoot`] components.
 #[derive(Bundle)]
 #[allow(missing_docs /* field description is trivial */)]
 pub struct SceneBundle {
     pub reload: Hook,
-    pub scene: BevySceneBundle,
+    pub scene: SceneRoot,
 }
 
-/// A newtype for a dynamic `Fn` that can be run as a hook.
+/// A new type for a dynamic `Fn` that can be run as a hook.
 ///
 /// This is to allow `#[reflect(ignore)]`.
 pub struct HookFn(
@@ -29,7 +29,7 @@ impl Default for HookFn {
 /// Controls loading and reloading of scenes with a hook.
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Reflect)]
 pub enum State {
-    /// The scene's entites are not yet added to the `World`.
+    /// The scene's entities are not yet added to the `World`.
     Loading,
     /// The scene's entities are now in the `World` and its entities have the
     /// components added by the scene's [`Hook::hook`].

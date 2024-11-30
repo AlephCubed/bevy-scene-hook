@@ -19,11 +19,11 @@ pub struct SceneHooked;
 /// Add this as a component to any entity to run `hook`
 /// when the scene is loaded.
 ///
-/// You can use it to add your own non-serializable components to entites
+/// You can use it to add your own non-serializable components to entities
 /// present in a scene file.
 ///
 /// A typical usage is adding animation, physics collision data or marker
-/// components to a scene spawned from a file format that do not support it.
+/// components to a scene spawned from a file format that does not support it.
 ///
 /// # Access to `World`
 ///
@@ -37,7 +37,6 @@ pub struct SceneHooked;
 /// # use bevy::asset::AssetServer;
 /// use bevy::prelude::SceneRoot;
 /// # use bevy::utils::default;
-/// # use bevy::scene::SceneBundle;
 /// use bevy_scene_hook::{SceneHook, HookedSceneBundle};
 /// # #[derive(Component)]
 /// # struct Name; impl Name { fn as_str(&self) -> &str { todo!() } }
@@ -67,11 +66,11 @@ pub struct SceneHook {
     hook: Box<dyn Fn(&EntityRef, &mut EntityCommands) + Send + Sync + 'static>,
 }
 impl SceneHook {
-    /// Add a hook to a scene, to run for each entities when the scene is
+    /// Add a hook to a scene, to run for each entity when the scene is
     /// loaded.
     ///
-    /// The hook adds [`Component`]s or do anything with entity in the spawned
-    /// scene refered by `EntityRef`.
+    /// The hook adds [`Component`]s or does anything with entity in the spawned
+    /// scene referred by `EntityRef`.
     ///
     /// # Access to `World`
     ///
@@ -87,7 +86,7 @@ impl SceneHook {
     /// # };
     /// # use bevy::asset::{AssetServer, Handle};
     /// # use bevy::utils::default;
-    /// # use bevy::scene::{Scene, SceneBundle, SceneRoot};
+    /// # use bevy::scene::{Scene, SceneRoot};
     /// use bevy_scene_hook::{SceneHook, HookedSceneBundle};
     /// # #[derive(Component)] struct Name;
     /// # type DeckData = Scene;
@@ -108,8 +107,8 @@ impl SceneHook {
     }
 }
 
-/// Run once [`SceneHook`]s added to [`SceneBundle`](crate::SceneBundle) or
-/// [`DynamicSceneBundle`](crate::DynamicSceneBundle) when the scenes are loaded.
+/// Run once [`SceneHook`]s added to [`SceneRoot`](crate::SceneRoot) or
+/// [`DynamicSceneRoot`](crate::DynamicSceneRoot) when the scenes are loaded.
 pub fn run_hooks(
     unloaded_instances: Query<(Entity, &SceneInstance, &SceneHook), Without<SceneHooked>>,
     scene_manager: Res<SceneSpawner>,

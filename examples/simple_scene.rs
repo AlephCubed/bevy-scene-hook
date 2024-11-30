@@ -74,10 +74,10 @@ fn setup(mut cmds: Commands, mut gizmo_conf: ResMut<GizmoConfigStore>) {
     let config = gizmo_conf.config_mut::<DefaultGizmoConfigGroup>().0;
     config.depth_bias = 0.;
 
-    cmds.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(5., 0., 0.).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    });
+    cmds.spawn((
+        Camera3d::default(), 
+        Transform::from_xyz(5., 0., 0.).looking_at(Vec3::ZERO, Vec3::Y)
+    ));
 
     // example instructions
     let instr = "1: reload\n2: change reloadable scene\n3: delete reloadable scene (permanent)";
@@ -88,42 +88,44 @@ fn load_scenes(mut cmds: Commands, server: Res<AssetServer>) {
     let show_gizmo = |color, shape| ShowGizmo { color, shape };
     // ## HookedSceneBundle, standard usage ##
 
-    cmds.spawn(HookedSceneBundle {
-        scene: SceneRoot(server.load(SAMPLE)),
-        hook: SceneHook::new(move |entity, cmds| {
-            // You are not limited to matching the `Name`, you could also
-            // parse it and add different thing based on the name. For example,
-            // you could convert the name into a color instead of hardcoding the color.
-            match entity.get().map(Name::as_str) {
-                Some("yellow") => cmds.insert(show_gizmo(css::YELLOW.into(), Shape::Sphere)),
-                Some("red") => cmds.insert(show_gizmo(css::RED.into(), Shape::Cone)),
-                Some("green") => cmds.insert(show_gizmo(css::GREEN.into(), Shape::Cone)),
-                Some("blue") => cmds.insert(show_gizmo(css::BLUE.into(), Shape::Sphere)),
-                Some("Cube") => cmds.insert(Cube(-0.025)),
-                _ => cmds,
-            };
-        }),
-    });
+    cmds.spawn((
+        HookedSceneBundle {
+            scene: SceneRoot(server.load(SAMPLE)),
+            hook: SceneHook::new(move |entity, cmds| {
+                // You are not limited to matching the `Name`, you could also
+                // parse it and add different thing based on the name. For example,
+                // you could convert the name into a color instead of hardcoding the color.
+                match entity.get().map(Name::as_str) {
+                    Some("yellow") => cmds.insert(show_gizmo(css::YELLOW.into(), Shape::Sphere)),
+                    Some("red") => cmds.insert(show_gizmo(css::RED.into(), Shape::Cone)),
+                    Some("green") => cmds.insert(show_gizmo(css::GREEN.into(), Shape::Cone)),
+                    Some("blue") => cmds.insert(show_gizmo(css::BLUE.into(), Shape::Sphere)),
+                    Some("Cube") => cmds.insert(Cube(-0.025)),
+                    _ => cmds,
+                };
+            }),
+        },
+        Transform::from_xyz(0., 0., -2.)
+    ));
 
     // ## reload::SceneBundle, advanced usage ##
 
-    cmds.spawn(reload::SceneBundle {
-        scene: SceneBundle {
+    cmds.spawn((
+        reload::SceneBundle {
             scene: SceneRoot(server.load(SAMPLE)),
-            transform: Transform::from_xyz(0., 0., 2.),
-            ..default()
+            reload: reload::Hook::new(move |entity, cmds, _world, _root| {
+                match entity.get().map(Name::as_str) {
+                    Some("yellow") => cmds.insert(show_gizmo(css::YELLOW.into(), Shape::Cube)),
+                    Some("red") => cmds.insert(show_gizmo(css::RED.into(), Shape::Cylinder)),
+                    Some("green") => cmds.insert(show_gizmo(css::GREEN.into(), Shape::Cylinder)),
+                    Some("blue") => cmds.insert(show_gizmo(css::BLUE.into(), Shape::Cube)),
+                    Some("Cube") => cmds.insert(Cube(0.05)),
+                    _ => cmds,
+                };
+            }),
         },
-        reload: reload::Hook::new(move |entity, cmds, _world, _root| {
-            match entity.get().map(Name::as_str) {
-                Some("yellow") => cmds.insert(show_gizmo(css::YELLOW.into(), Shape::Cube)),
-                Some("red") => cmds.insert(show_gizmo(css::RED.into(), Shape::Cylinder)),
-                Some("green") => cmds.insert(show_gizmo(css::GREEN.into(), Shape::Cylinder)),
-                Some("blue") => cmds.insert(show_gizmo(css::BLUE.into(), Shape::Cube)),
-                Some("Cube") => cmds.insert(Cube(0.05)),
-                _ => cmds,
-            };
-        }),
-    });
+        Transform::from_xyz(0., 0., 2.)
+    ));
 }
 
 fn reload_scene(
