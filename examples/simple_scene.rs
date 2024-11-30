@@ -89,11 +89,7 @@ fn load_scenes(mut cmds: Commands, server: Res<AssetServer>) {
     // ## HookedSceneBundle, standard usage ##
 
     cmds.spawn(HookedSceneBundle {
-        scene: SceneBundle {
-            scene: SceneRoot(server.load(SAMPLE)),
-            transform: Transform::from_xyz(0., 0., -2.),
-            ..default()
-        },
+        scene: SceneRoot(server.load(SAMPLE)),
         hook: SceneHook::new(move |entity, cmds| {
             // You are not limited to matching the `Name`, you could also
             // parse it and add different thing based on the name. For example,

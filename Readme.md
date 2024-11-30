@@ -39,7 +39,7 @@ struct Card;
 
 fn load_scene(mut cmds: Commands, asset_server: Res<AssetServer>) {
     cmds.spawn(HookedSceneBundle {
-        scene: SceneBundle { scene: SceneRoot(asset_server.load("scene.glb#Scene0")), ..default() },
+        scene: SceneRoot(asset_server.load("scene.glb#Scene0")),
         hook: SceneHook::new(|entity, cmds| {
             match entity.get::<Name>().map(|t|t.as_str()) {
                 Some("Pile") => cmds.insert(Pile(PileType::Drawing)),

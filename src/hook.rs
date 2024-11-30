@@ -51,7 +51,7 @@ pub struct SceneHooked;
 ///
 /// fn load_scene(mut cmds: Commands, asset_server: Res<AssetServer>) {
 ///     cmds.spawn(HookedSceneBundle {
-///         scene: SceneBundle { scene: SceneRoot(asset_server.load("scene.glb#Scene0")), ..default() },
+///         scene: SceneRoot(asset_server.load("scene.glb#Scene0")),
 ///         hook: SceneHook::new(|entity, cmds| {
 ///             match entity.get::<Name>().map(|t|t.as_str()) {
 ///                 Some("Pile") => cmds.insert(Pile(PileType::Drawing)),
@@ -98,7 +98,7 @@ impl SceneHook {
     /// fn load_scene(mut cmds: Commands, decks: Res<DeckAssets>, assets: Res<AssetServer>) {
     ///     let decks = decks.clone();
     ///     cmds.spawn(HookedSceneBundle {
-    ///         scene: SceneBundle { scene: SceneRoot(assets.load("scene.glb#Scene0")), ..default() },
+    ///         scene: SceneRoot(assets.load("scene.glb#Scene0")),
     ///         hook: SceneHook::new(move |entity, cmds| hook(&decks, entity, cmds)),
     ///     });
     /// }
