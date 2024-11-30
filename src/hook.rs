@@ -35,6 +35,7 @@ pub struct SceneHooked;
 ///  ```rust
 /// # use bevy::ecs::{system::Res, component::Component, system::Commands};
 /// # use bevy::asset::AssetServer;
+/// use bevy::prelude::SceneRoot;
 /// # use bevy::utils::default;
 /// # use bevy::scene::SceneBundle;
 /// use bevy_scene_hook::{SceneHook, HookedSceneBundle};
@@ -50,7 +51,7 @@ pub struct SceneHooked;
 ///
 /// fn load_scene(mut cmds: Commands, asset_server: Res<AssetServer>) {
 ///     cmds.spawn(HookedSceneBundle {
-///         scene: SceneBundle { scene: asset_server.load("scene.glb#Scene0"), ..default() },
+///         scene: SceneBundle { scene: SceneRoot(asset_server.load("scene.glb#Scene0")), ..default() },
 ///         hook: SceneHook::new(|entity, cmds| {
 ///             match entity.get::<Name>().map(|t|t.as_str()) {
 ///                 Some("Pile") => cmds.insert(Pile(PileType::Drawing)),
@@ -86,7 +87,7 @@ impl SceneHook {
     /// # };
     /// # use bevy::asset::{AssetServer, Handle};
     /// # use bevy::utils::default;
-    /// # use bevy::scene::{Scene, SceneBundle};
+    /// # use bevy::scene::{Scene, SceneBundle, SceneRoot};
     /// use bevy_scene_hook::{SceneHook, HookedSceneBundle};
     /// # #[derive(Component)] struct Name;
     /// # type DeckData = Scene;
@@ -97,7 +98,7 @@ impl SceneHook {
     /// fn load_scene(mut cmds: Commands, decks: Res<DeckAssets>, assets: Res<AssetServer>) {
     ///     let decks = decks.clone();
     ///     cmds.spawn(HookedSceneBundle {
-    ///         scene: SceneBundle { scene: assets.load("scene.glb#Scene0"), ..default() },
+    ///         scene: SceneBundle { scene: SceneRoot(assets.load("scene.glb#Scene0")), ..default() },
     ///         hook: SceneHook::new(move |entity, cmds| hook(&decks, entity, cmds)),
     ///     });
     /// }
@@ -122,7 +123,7 @@ pub fn run_hooks(
         let entities = scene_manager
             .iter_instance_entities(**instance)
             .chain(std::iter::once(entity));
-        for entity_ref in entities.filter_map(|e| world.get_entity(e)) {
+        for entity_ref in entities.filter_map(|e| world.get_entity(e).ok()) {
             let mut cmd = cmds.entity(entity_ref.id());
             (hooked.hook)(&entity_ref, &mut cmd);
         }

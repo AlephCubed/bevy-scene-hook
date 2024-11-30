@@ -2,11 +2,7 @@
 
 use bevy::ecs::system::EntityCommands;
 use bevy::ecs::world::Command;
-use bevy::prelude::{
-    AssetServer, Bundle, Commands, Component, DespawnRecursiveExt, Entity, EntityRef, Handle,
-    IntoSystemConfigs, Plugin as BevyPlugin, Query, Reflect, Res, Scene,
-    SceneBundle as BevySceneBundle, SceneSpawner, World,
-};
+use bevy::prelude::{AssetServer, Bundle, Commands, Component, DespawnRecursiveExt, Entity, EntityRef, IntoSystemConfigs, Plugin as BevyPlugin, Query, Reflect, Res, Scene, SceneBundle as BevySceneBundle, SceneRoot, SceneSpawner, World};
 use bevy::scene::SceneInstance;
 
 /// Bundle a reload [`Hook`] with the standard [`bevy::prelude::SceneBundle`] components.
@@ -107,7 +103,7 @@ impl Command for UpdateHook {
 
 /// Run [`Hook`]s and respawn scenes according to [`Hook::state`].
 pub fn run_reloadable_hooks(
-    instances: Query<(Entity, &Handle<Scene>, &SceneInstance, &Hook)>,
+    instances: Query<(Entity, &SceneRoot, &SceneInstance, &Hook)>,
     scene_manager: Res<SceneSpawner>,
     assets: Res<AssetServer>,
     world: &World,
@@ -117,31 +113,31 @@ pub fn run_reloadable_hooks(
         let instance_ready = scene_manager.instance_is_ready(**instance);
         match reload.state {
             State::Loading if instance_ready => {
-                cmds.add(UpdateHook { entity, new_state: State::Hooked });
+                cmds.queue(UpdateHook { entity, new_state: State::Hooked });
                 let entities = scene_manager.iter_instance_entities(**instance);
-                for entity_ref in entities.filter_map(|e| world.get_entity(e)) {
+                for entity_ref in entities.filter_map(|e| world.get_entity(e).ok()) {
                     let mut cmd = cmds.entity(entity_ref.id());
                     (reload.hook.0)(&entity_ref, &mut cmd, world, entity);
                 }
             }
             State::Hooked | State::Loading => continue,
             State::MustReload => {
-                let Some(file_path) = assets.get_path(handle) else {
+                let Some(file_path) = handle.0.path() else {
                     bevy::log::warn!("Tried to reload a scene without a registered path");
                     continue;
                 };
                 let entities = scene_manager.iter_instance_entities(**instance);
-                for entity in entities.filter(|e| world.get_entity(*e).is_some()) {
+                for entity in entities.filter(|e| world.get_entity(*e).is_ok()) {
                     cmds.entity(entity).despawn_recursive();
                 }
-                cmds.add(UpdateHook { entity, new_state: State::Loading });
+                cmds.queue(UpdateHook { entity, new_state: State::Loading });
                 cmds.entity(entity)
-                    .insert(assets.load::<Scene>(file_path))
+                    .insert(SceneRoot(assets.load::<Scene>(file_path)))
                     .remove::<SceneInstance>();
             }
             State::MustDelete => {
                 let entities = scene_manager.iter_instance_entities(**instance);
-                for entity in entities.filter(|e| world.get_entity(*e).is_some()) {
+                for entity in entities.filter(|e| world.get_entity(*e).is_ok()) {
                     cmds.entity(entity).despawn_recursive();
                 }
                 cmds.entity(entity).despawn_recursive();

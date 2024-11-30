@@ -46,16 +46,16 @@ fn show_gizmos(mut gizmos: Gizmos, to_show: Query<(&GlobalTransform, &ShowGizmo)
         let cylinder = Cylinder { radius: 0.1, half_height: 0.15 };
         match to_show.shape {
             Shape::Sphere => {
-                gizmos.sphere(pos, rot, 0.2, to_show.color);
+                gizmos.sphere(pos, 0.2, to_show.color);
             }
             Shape::Cube => {
                 gizmos.cuboid(cuboid, to_show.color);
             }
             Shape::Cone => {
-                gizmos.primitive_3d(&cone, pos, rot, to_show.color);
+                gizmos.primitive_3d(&cone, pos, to_show.color);
             }
             Shape::Cylinder => {
-                gizmos.primitive_3d(&cylinder, pos, rot, to_show.color);
+                gizmos.primitive_3d(&cylinder, pos, to_show.color);
             }
         }
     }
@@ -81,7 +81,7 @@ fn setup(mut cmds: Commands, mut gizmo_conf: ResMut<GizmoConfigStore>) {
 
     // example instructions
     let instr = "1: reload\n2: change reloadable scene\n3: delete reloadable scene (permanent)";
-    cmds.spawn(TextBundle::from_section(instr, default()));
+    cmds.spawn(Text(instr.to_owned()));
 }
 
 fn load_scenes(mut cmds: Commands, server: Res<AssetServer>) {
@@ -90,7 +90,7 @@ fn load_scenes(mut cmds: Commands, server: Res<AssetServer>) {
 
     cmds.spawn(HookedSceneBundle {
         scene: SceneBundle {
-            scene: server.load(SAMPLE),
+            scene: SceneRoot(server.load(SAMPLE)),
             transform: Transform::from_xyz(0., 0., -2.),
             ..default()
         },
@@ -113,7 +113,7 @@ fn load_scenes(mut cmds: Commands, server: Res<AssetServer>) {
 
     cmds.spawn(reload::SceneBundle {
         scene: SceneBundle {
-            scene: server.load(SAMPLE),
+            scene: SceneRoot(server.load(SAMPLE)),
             transform: Transform::from_xyz(0., 0., 2.),
             ..default()
         },
